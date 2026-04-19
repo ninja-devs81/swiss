@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spitex Reconciliation – Ergebnisse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #F5F4F0;
+      --surface: #FFFFFF;
+      --ink:     #111111;
+      --muted:   #6B6B6B;
+      --accent:  #C8102E;
+      --border:  #DDDBD5;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+    }
+
+    body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; }
+
+    nav {
+      background: var(--ink);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-cross { width: 20px; height: 20px; background: var(--accent); position: relative; flex-shrink: 0; }
+    .nav-cross::before, .nav-cross::after { content: ''; position: absolute; background: white; }
+    .nav-cross::before { width: 12px; height: 3px; top: 8.5px; left: 4px; }
+    .nav-cross::after  { width: 3px; height: 12px; top: 4px; left: 8.5px; }
+    .nav-title { color: white; font-size: 12px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+    .nav-user { display: flex; align-items: center; gap: 20px; }
+    .nav-username { color: #888; font-size: 12px; font-family: var(--mono); }
+    .nav-link { color: #888; font-size: 12px; font-family: var(--mono); text-decoration: none; transition: color 0.15s; }
+    .nav-link:hover { color: white; }
+
+    main { max-width: 1280px; margin: 0 auto; padding: 48px 24px; }
+
+    /* KPI STRIP */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .kpi {
+      background: var(--surface);
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      font-family: var(--mono);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .kpi.ok    .kpi-value { color: #16a34a; }
+    .kpi.warn  .kpi-value { color: #d97706; }
+    .kpi.err   .kpi-value { color: var(--accent); }
+    .kpi.oor   .kpi-value { color: #7c3aed; }
+    .kpi.none  .kpi-value { color: #94a3b8; }
+    .kpi.miss  .kpi-value { color: #f97316; }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toolbar-left { display: flex; align-items: center; gap: 12px; }
+
+    .page-tag {
+      font-size: 11px;
+      font-family: var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .result-meta {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 24px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--mono);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+    }
+
+    .btn-primary { background: var(--ink); color: white; }
+    .btn-primary:hover { background: #333; }
+
+    .btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--ink); }
+
+    /* FILTER */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: all 0.15s;
+      color: var(--muted);
+    }
+
+    .filter-btn.active, .filter-btn:hover { background: var(--ink); color: white; border-color: var(--ink); }
+
+    /* SEARCH */
+    .search-input {
+      height: 36px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 0 12px;
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--ink);
+      outline: none;
+      width: 240px;
+      transition: border-color 0.15s;
+    }
+
+    .search-input:focus { border-color: var(--ink); }
+
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: var(--ink);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #aaa;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover { color: white; }
+    thead th.sorted { color: white; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover { background: #FAFAF8; }
+    tbody tr.hidden { display: none; }
+
+    td {
+      padding: 11px 14px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    td.patient-col { font-weight: 500; }
+    td.mono { font-family: var(--mono); font-size: 12px; }
+
+    /* Progress bar */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-bar {
+      width: 80px;
+      height: 4px;
+      background: #E8E6E0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    .pct-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      min-width: 44px;
+      text-align: right;
+    }
+
+    /* Status badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+
+    /* Empty state */
+    .empty-row td {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      padding: 10px 24px;
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+    .tab-btn:hover:not(.active) { color: var(--ink); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* PA status badges */
+    .pa-ok     { background:#dcfce7; color:#15803d; }
+    .pa-dev    { background:#fef9c3; color:#a16207; }
+    .pa-maj    { background:#fee2e2; color:#b91c1c; }
+    .pa-bnp    { background:#fee2e2; color:#b91c1c; }
+    .pa-pnb    { background:#ffedd5; color:#c2410c; }
+    .pa-tar    { background:#e0f2fe; color:#0369a1; }
+
+    .ov-green  { background:#dcfce7; color:#15803d; }
+    .ov-yellow { background:#fef9c3; color:#a16207; }
+    .ov-red    { background:#fee2e2; color:#b91c1c; }
+
+    .rx-green  { background:#dcfce7; color:#15803d; }
+    .rx-yellow { background:#fef9c3; color:#a16207; }
+    .rx-red    { background:#fee2e2; color:#b91c1c; }
+
+    /* PA KPI strip */
+    .pa-kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="/dashboard">
+    <div class="nav-cross"></div>
+    <span class="nav-title">Spitex · Leistungskontrolle</span>
+  </a>
+  <div class="nav-user">
+    <span class="nav-username">{{ user.sub }}</span>
+    <a class="nav-link" href="/dashboard">Neuer Upload</a>
+    <a class="nav-link" href="/api/auth/logout">Abmelden</a>
+  </div>
+</nav>
+
+<main>
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-value">{{ summary.total_patients }}</div>
+      <div class="kpi-label">Patienten</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">{{ summary.total_prescriptions }}</div>
+      <div class="kpi-label">Verordnungen</div>
+    </div>
+    <div class="kpi ok">
+      <div class="kpi-value">{{ summary.within_limit }}</div>
+      <div class="kpi-label">Im Rahmen</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-value">{{ summary.near_limit }}</div>
+      <div class="kpi-label">Nahe Limit</div>
+    </div>
+    <div class="kpi err">
+      <div class="kpi-value">{{ summary.exceeded }}</div>
+      <div class="kpi-label">Überschritten</div>
+    </div>
+    <div class="kpi oor">
+      <div class="kpi-value">{{ summary.out_of_range }}</div>
+      <div class="kpi-label">Ausserh. Zeitraum</div>
+    </div>
+    <div class="kpi miss">
+      <div class="kpi-value">{{ summary.no_prescription }}</div>
+      <div class="kpi-label">Ohne Verordnung</div>
+    </div>
+  </div>
+
+  <!-- Toolbar (shared) -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="page-tag">Ergebnisse</span>
+      <span class="result-meta">Erstellt: {{ summary.generated_at }}</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <a href="/reports/download" class="btn btn-primary">↓ Excel herunterladen</a>
+      <a href="/reports/download/csv" class="btn btn-secondary">↓ CSV</a>
+      <a href="/dashboard" class="btn btn-secondary">Neuer Upload</a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('rx', this)">Verordnungen</button>
+    {% if plan_actual %}
+    <button class="tab-btn" onclick="switchTab('pa', this)">Plan vs. Ist &nbsp;<span style="font-size:10px;background:#fee2e2;color:#b91c1c;padding:2px 7px;border-radius:2px;">{{ plan_actual.rows|length }}</span></button>
+    {% endif %}
+  </div>
+
+  <!-- ======================== TAB 1: PRESCRIPTIONS ======================== -->
+  <div id="tab-rx" class="tab-panel active">
+
+    <!-- Filter buttons -->
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="ALL" onclick="setFilter(this,'resultsBody')">Alle ({{ summary.rows|length }})</button>
+      <button class="filter-btn" data-filter="WITHIN_LIMIT"    onclick="setFilter(this,'resultsBody')" style="--fc:#16a34a">Im Rahmen ({{ summary.within_limit }})</button>
+      <button class="filter-btn" data-filter="NEAR_LIMIT"      onclick="setFilter(this,'resultsBody')" style="--fc:#d97706">⚠ Nahe Limit ({{ summary.near_limit }})</button>
+      <button class="filter-btn" data-filter="EXCEEDED"        onclick="setFilter(this,'resultsBody')" style="--fc:#C8102E">✗ Überschritten ({{ summary.exceeded }})</button>
+      <button class="filter-btn" data-filter="NO_SERVICES"     onclick="setFilter(this,'resultsBody')">— Keine Leistungen ({{ summary.no_services }})</button>
+      <button class="filter-btn" data-filter="OUT_OF_RANGE"     onclick="setFilter(this,'resultsBody')" style="--fc:#7c3aed">✗ Ausserhalb Zeitraum ({{ summary.out_of_range }})</button>
+      <button class="filter-btn" data-filter="NO_PRESCRIPTION" onclick="setFilter(this,'resultsBody')">! Ohne Verordnung ({{ summary.no_prescription }})</button>
+      <input type="text" class="search-input" id="rxSearch" placeholder="Patient suchen…" oninput="filterBySearch('rxSearch','resultsBody')" style="margin-left:auto;">
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('resultsBody',0)">Patient</th>
+            <th onclick="sortTable('resultsBody',1)">Geburtsdatum</th>
+            <th onclick="sortTable('resultsBody',2)">Tarifcode</th>
+            <th onclick="sortTable('resultsBody',3)">Tarifziffer</th>
+            <th onclick="sortTable('resultsBody',4)">Gültig von</th>
+            <th onclick="sortTable('resultsBody',5)">Gültig bis</th>
+            <th onclick="sortTable('resultsBody',6)">Bewilligt (Min.)</th>
+            <th onclick="sortTable('resultsBody',7)">Erbracht (Min.)</th>
+            <th onclick="sortTable('resultsBody',8)">Verbleibend</th>
+            <th onclick="sortTable('resultsBody',9)">Auslastung</th>
+            <th onclick="sortTable('resultsBody',10)">Leistungen</th>
+            <th onclick="sortTable('resultsBody',11)">Status</th>
+            <th onclick="sortTable('resultsBody',12)">Ablehnungsgrund</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          {% for row in summary.rows %}
+          {% set pct = row.utilization_pct if row.utilization_pct is not none else 0 %}
+          {% set bar_color = '#22c55e' if pct < 80 else ('#f59e0b' if pct < 100 else '#ef4444') %}
+          {% set badge_bg = '#dcfce7' if row.status == 'WITHIN_LIMIT' else ('#fef9c3' if row.status == 'NEAR_LIMIT' else ('#fee2e2' if row.status == 'EXCEEDED' else ('#f3e8ff' if row.status == 'OUT_OF_RANGE' else ('#f1f5f9' if row.status == 'NO_SERVICES' else '#ffedd5')))) %}
+          {% set badge_color = '#15803d' if row.status == 'WITHIN_LIMIT' else ('#a16207' if row.status == 'NEAR_LIMIT' else ('#b91c1c' if row.status == 'EXCEEDED' else ('#7c3aed' if row.status == 'OUT_OF_RANGE' else ('#475569' if row.status == 'NO_SERVICES' else '#c2410c')))) %}
+          <tr data-status="{{ row.status }}" data-patient="{{ row.patient|lower }}">
+            <td class="patient-col">{{ row.patient }}</td>
+            <td class="mono">{{ row.geburtsdatum or '—' }}</td>
+            <td class="mono">{{ row.tarifcode or '—' }}</td>
+            <td class="mono">{{ row.tarifziffer or '—' }}</td>
+            <td class="mono">{{ row.valid_from or '—' }}</td>
+            <td class="mono">{{ row.valid_to or '—' }}</td>
+            <td class="mono">{{ row.authorized_minutes|int }}</td>
+            <td class="mono">{{ row.consumed_minutes|int }}</td>
+            <td class="mono">{{ row.remaining_minutes|int if row.status != 'NO_PRESCRIPTION' else '—' }}</td>
+            <td>
+              {% if row.utilization_pct is not none %}
+              <div class="progress-wrap">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:{{ [row.utilization_pct, 100]|min }}%; background:{{ bar_color }};"></div>
+                </div>
+                <span class="pct-text" style="color:{{ bar_color }};">{{ row.utilization_pct }}%</span>
+              </div>
+              {% else %}
+              <span class="mono">—</span>
+              {% endif %}
+            </td>
+            <td class="mono">{{ row.service_count }}</td>
+            <td>
+              <span class="badge" style="background:{{ badge_bg }};color:{{ badge_color }};">
+                {{ status_labels[ReconciliationStatus(row.status)] }}
+              </span>
+            </td>
+            <td class="mono" style="font-size:11px;white-space:normal;max-width:300px;">{{ row.refusal_reason or '—' }}</td>
+          </tr>
+          {% endfor %}
+          {% if not summary.rows %}
+          <tr class="empty-row"><td colspan="13">Keine Ergebnisse gefunden</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-bar">
+      <span>{{ summary.rows|length }} Datensätze · In-Memory verarbeitet · Nicht gespeichert</span>
+      <span>{{ summary.generated_at }}</span>
+    </div>
+  </div><!-- /tab-rx -->
+
+  <!-- ======================== TAB 2: PLAN VS ACTUAL ======================== -->
+  {% if plan_actual %}
+  <div id="tab-pa" class="tab-panel">
+
+    <!-- PA KPI strip -->
+    <div class="pa-kpi-strip">
+      <div class="kpi ok">
+        <div class="kpi-value">{{ plan_actual.green }}</div>
+        <div class="kpi-label">Gruen</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-value">{{ plan_actual.yellow }}</div>
+        <div class="kpi-label">Gelb</div>
+      </div>
+      <div class="kpi err">
+        <div class="kpi-value">{{ plan_actual.red }}</div>
+        <div class="kpi-label">Rot</div>
+      </div>
+      <div class="kpi miss">
+        <div class="kpi-value">{{ plan_actual.planned_not_billed }}</div>
+        <div class="kpi-label">Nur geplant</div>
+      </div>
+      <div class="kpi none">
+        <div class="kpi-value">{{ plan_actual.tariff_mismatch }}</div>
+        <div class="kpi-label">Tarifabweichung</div>
+      </div>
+    </div>
+
+    <!-- PA Filter + Search -->
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="ALL"                onclick="setFilter(this,'paBody')">Alle ({{ plan_actual.rows|length }})</button>
+      <button class="filter-btn" data-filter="GREEN"                     onclick="setFilter(this,'paBody')">Gruen ({{ plan_actual.green }})</button>
+      <button class="filter-btn" data-filter="YELLOW"                    onclick="setFilter(this,'paBody')">Gelb ({{ plan_actual.yellow }})</button>
+      <button class="filter-btn" data-filter="RED"                       onclick="setFilter(this,'paBody')">Rot ({{ plan_actual.red }})</button>
+      <input type="text" class="search-input" id="paSearch" placeholder="Patient suchen…" oninput="filterBySearch('paSearch','paBody')" style="margin-left:auto;">
+    </div>
+
+    <!-- PA Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable('paBody',0)">Patient</th>
+            <th onclick="sortTable('paBody',1)">Datum</th>
+            <th onclick="sortTable('paBody',2)">Geplante Zeit</th>
+            <th onclick="sortTable('paBody',3)">Erfasste Zeit</th>
+            <th onclick="sortTable('paBody',4)">Tarif Plan</th>
+            <th onclick="sortTable('paBody',5)">Tarif Ist</th>
+            <th onclick="sortTable('paBody',6)">Geplant (Min.)</th>
+            <th onclick="sortTable('paBody',7)">Erbracht (Min.)</th>
+            <th onclick="sortTable('paBody',8)">Abweichung (Min.)</th>
+            <th onclick="sortTable('paBody',9)">Prescription</th>
+            <th onclick="sortTable('paBody',10)">Overall</th>
+            <th onclick="sortTable('paBody',11)">Detail</th>
+            <th onclick="sortTable('paBody',12)">Hinweis</th>
+          </tr>
+        </thead>
+        <tbody id="paBody">
+          {% for row in plan_actual.rows %}
+          {% set pa_cls = 'pa-ok' if row.status == 'OK' else ('pa-dev' if row.status == 'MINOR_DEVIATION' else ('pa-maj' if row.status == 'MAJOR_DEVIATION' else ('pa-bnp' if row.status == 'BILLED_NOT_PLANNED' else ('pa-pnb' if row.status == 'PLANNED_NOT_BILLED' else 'pa-tar')))) %}
+          {% set ov_cls = 'ov-green' if row.overall_status == 'GREEN' else ('ov-yellow' if row.overall_status == 'YELLOW' else 'ov-red') %}
+          {% set rx_cls = 'rx-green' if row.prescription_status in ['WITHIN_LIMIT', 'NO_SERVICES'] else ('rx-yellow' if row.prescription_status == 'NEAR_LIMIT' else 'rx-red') %}
+          {% set rx_text = 'Gruen' if row.prescription_status in ['WITHIN_LIMIT', 'NO_SERVICES'] else ('Gelb' if row.prescription_status == 'NEAR_LIMIT' else 'Rot') %}
+          {% set dev = row.deviation_minutes %}
+          {% set dev_color = '#15803d' if dev is not none and dev|float <= 0 else ('#c2410c' if dev is not none else '#6b6b6b') %}
+          <tr data-status="{{ row.overall_status }}" data-patient="{{ row.patient|lower }}">
+            <td class="patient-col">{{ row.patient }}</td>
+            <td class="mono">{{ row.service_date or '—' }}</td>
+            <td class="mono">{{ row.planned_time or '—' }}</td>
+            <td class="mono">{{ row.recorded_time or '—' }}</td>
+            <td class="mono">{{ row.tarifziffer_plan   or '—' }}</td>
+            <td class="mono">{{ row.tarifziffer_actual or '—' }}</td>
+            <td class="mono">{{ row.planned_minutes|int   if row.planned_minutes  is not none else '—' }}</td>
+            <td class="mono">{{ row.actual_minutes|int    if row.actual_minutes   is not none else '—' }}</td>
+            <td class="mono" style="color:{{ dev_color }};font-weight:500;">
+              {% if dev is not none %}
+                {{ '+' if dev > 0 else '' }}{{ dev|int }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <span class="badge {{ rx_cls }}">{{ rx_text }}</span>
+            </td>
+            <td>
+              <span class="badge {{ ov_cls }}">{{ row.overall_status }}</span>
+            </td>
+            <td>
+              <span class="badge {{ pa_cls }}">
+                {{ plan_actual_labels[PlanActualStatus(row.status)] }}
+              </span>
+            </td>
+            <td class="mono" style="font-size:11px;white-space:normal;max-width:260px;">{{ row.note or '—' }}</td>
+          </tr>
+          {% endfor %}
+          {% if not plan_actual.rows %}
+          <tr class="empty-row"><td colspan="13">Keine Plan-vs.-Ist-Daten vorhanden</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-bar">
+      <span>{{ plan_actual.rows|length }} Abgleich-Zeilen · In-Memory verarbeitet · Nicht gespeichert</span>
+      <span>{{ plan_actual.generated_at }}</span>
+    </div>
+  </div><!-- /tab-pa -->
+  {% endif %}
+</main>
+
+<script>
+  // ---- Tab switching ----
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ---- Generic filter (works for both tables, keyed by tbody id) ----
+  const _filterState = {};
+
+  function setFilter(btn, bodyId) {
+    const panel = btn.closest('.tab-panel');
+    panel.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _filterState[bodyId] = { status: btn.dataset.filter, search: _filterState[bodyId]?.search || '' };
+    applyFilters(bodyId);
+  }
+
+  function filterBySearch(inputId, bodyId) {
+    const val = document.getElementById(inputId).value;
+    _filterState[bodyId] = { status: _filterState[bodyId]?.status || 'ALL', search: val };
+    applyFilters(bodyId);
+  }
+
+  function applyFilters(bodyId) {
+    const s = _filterState[bodyId] || { status: 'ALL', search: '' };
+    document.querySelectorAll('#' + bodyId + ' tr:not(.empty-row)').forEach(row => {
+      const statusMatch = s.status === 'ALL' || row.dataset.status === s.status;
+      const searchMatch = !s.search || row.dataset.patient.includes(s.search.toLowerCase());
+      row.classList.toggle('hidden', !(statusMatch && searchMatch));
+    });
+  }
+
+  // ---- Sort (generic, keyed by tbody id) ----
+  const _sortDir = {};
+  function sortTable(bodyId, col) {
+    const tbody = document.getElementById(bodyId);
+    const rows  = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
+    const key   = bodyId + '_' + col;
+    _sortDir[key] = !_sortDir[key];
+    rows.sort((a, b) => {
+      const va = a.cells[col]?.textContent.trim() || '';
+      const vb = b.cells[col]?.textContent.trim() || '';
+      const na = parseFloat(va.replace('%','').replace('—','0').replace('+',''));
+      const nb = parseFloat(vb.replace('%','').replace('—','0').replace('+',''));
+      const cmp = isNaN(na) || isNaN(nb) ? va.localeCompare(vb) : na - nb;
+      return _sortDir[key] ? cmp : -cmp;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+    tbody.closest('table').querySelectorAll('thead th').forEach((th, i) => {
+      th.classList.toggle('sorted', i === col);
+    });
+  }
+</script>
+</body>
+</html>

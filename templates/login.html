@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spitex Reconciliation – Anmeldung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #F5F4F0;
+      --surface: #FFFFFF;
+      --ink:     #111111;
+      --muted:   #6B6B6B;
+      --accent:  #C8102E;
+      --border:  #DDDBD5;
+      --mono:    'DM Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--ink);
+    }
+
+    body {
+      display: grid;
+      grid-template-columns: 1fr 480px 1fr;
+      grid-template-rows: 1fr auto 1fr;
+      min-height: 100vh;
+    }
+
+    .branding {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 48px;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-cross {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      position: relative;
+    }
+    .brand-cross::before, .brand-cross::after {
+      content: '';
+      position: absolute;
+      background: white;
+    }
+    .brand-cross::before { width: 16px; height: 4px; top: 12px; left: 6px; }
+    .brand-cross::after  { width: 4px; height: 16px; top: 6px; left: 12px; }
+
+    .brand-text {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .card {
+      grid-column: 2;
+      grid-row: 2;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 48px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      font-family: var(--mono);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: var(--mono);
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 0 14px;
+      font-size: 14px;
+      font-family: var(--sans);
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--ink);
+    }
+
+    .error-box {
+      background: #FFF0F0;
+      border-left: 3px solid var(--accent);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-family: var(--mono);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      height: 44px;
+      background: var(--ink);
+      color: white;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--mono);
+      transition: background 0.15s;
+      margin-top: 8px;
+    }
+
+    button:hover { background: #333; }
+
+    .footer {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 32px;
+    }
+
+    .footer-text {
+      font-size: 11px;
+      color: var(--border);
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="branding">
+    <div class="brand-mark">
+      <div class="brand-cross"></div>
+      <span class="brand-text">Spitex · Leistungskontrolle</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h1>Anmeldung</h1>
+    <p class="subtitle">Reconciliation Platform · Zugang beschränkt</p>
+
+    {% if error %}
+    <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/api/auth/login">
+      <div class="field">
+        <label for="username">Benutzername</label>
+        <input type="text" id="username" name="username" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Passwort</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit">Anmelden →</button>
+    </form>
+  </div>
+
+  <div class="footer">
+    <span class="footer-text">Sichere Verbindung · Daten werden nicht gespeichert</span>
+  </div>
+</body>
+</html>

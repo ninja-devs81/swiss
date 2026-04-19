@@ -1,0 +1,7 @@
+﻿GLN Nr. des Leistungserbringer;ZSR Nr. des Leistungserbringer;Name Patient;Vorname Patient;Geburtsdatum;AHV-Nummer;Verordnender Arzt;GLN Nummer Arzt;ZSR Nummer Arzt;Gültig von Datum;Gültig bis Datum';Tarifcode;Tarifziffer;Anz. verordnete Minuten
+7.601E+12;;Mustermann;Max;11.09.1962 00:00;756.2034.9299.46;Dr. med. Gideon Nagel;7.601E+12;R368412;21.10.2025 00:00;20.04.2026 00:00;532;53201;450
+7.601E+12;;Mustermann;Max;11.09.1962 00:00;756.2034.9299.46;Dr. med. Gideon Nagel;7.601E+12;R368412;21.10.2025 00:00;20.04.2026 00:00;532;53202;6162
+7.601E+12;;Mustermann;Max;11.09.1962 00:00;756.2034.9299.46;Dr. med. Gideon Nagel;7.601E+12;R368412;21.10.2025 00:00;20.04.2026 00:00;532;53203;12168
+7.601E+12;;Mustermann;Erika;19.02.1955 00:00;756.1652.3423.04;Dr. med. Julian Mettler;7.601E+12;V059312;26.08.2025 00:00;25.02.2026 00:00;532;53201;540
+7.601E+12;;Mustermann;Erika;19.02.1955 00:00;756.1652.3423.04;Dr. med. Julian Mettler;7.601E+12;V059312;26.08.2025 00:00;25.02.2026 00:00;532;53202;9310
+7.601E+12;;Mustermann;Erika;19.02.1955 00:00;756.1652.3423.04;Dr. med. Julian Mettler;7.601E+12;V059312;26.08.2025 00:00;25.02.2026 00:00;532;53203;3680
